@@ -1,8 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { register } = require("./controllers/authController");
-const { registerValidator } = require("./validators/authValidator");
+
+const authRoutes = require("./routes/authRoutes");
+const studentRoutes = require("./routes/studentRoutes");
 
 const app = express();
 
@@ -12,7 +13,10 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-app.post("/api/register", registerValidator, register);
+// app.post("/api/register", registerValidator, register);
+// http://locahost:80/api/v1/auth/register
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/students", studentRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
