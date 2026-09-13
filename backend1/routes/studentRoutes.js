@@ -12,7 +12,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
 // All student routes will require authentication
-router.use(authMiddleware);
+// router.use(authMiddleware);
 
 router.post("/", studentValidator, addStudent);
 router.get("/", getStudents);
