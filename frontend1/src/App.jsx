@@ -1,50 +1,52 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { UserDetailPage } from "./pages/UserDetailPage";
+import LoginPage from "./pages/LoginPage";
 
 export default function App() {
-  let c = 0;
-  const [count, setCount] = useState(c);
-  const [students, setStudents] = useState([]);
+  const [loginResponse, setLoginResponse] = useState({
+    token: "",
+    userId: "",
+    email: "",
+    isAuthenticated: false,
+  });
+  const onLogin = (response) => {
+    setLoginResponse((prev) => ({
+      ...prev,
+      token: response.token,
+      userId: response.user.id,
+      email: response.user.email,
+      isAuthenticated: response.token ? true : false,
+    }));
+
+    sessionStorage.setItem("token", response.token);
+    sessionStorage.setItem("isAuthenticated", response.token ? true : false);
+  };
+
+  const checkAuthentication = () => {
+    const token = sessionStorage.getItem("token");
+    const isAuthenticated = sessionStorage.getItem("isAuthenticated");
+
+    if (token && isAuthenticated) {
+      setLoginResponse((prev) => ({
+        ...prev,
+        token: token,
+        isAuthenticated: isAuthenticated === "true",
+      }));
+    }
+  };
 
   useEffect(() => {
-    loadStudents();
+    checkAuthentication();
   }, []);
 
-  function loadStudents() {
-    fetch("http://localhost:5050/api/v1/students")
-      .then((res) => res.json())
-      .then((data) => {
-        setStudents(data?.data);
-        console.log(data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  if (!loginResponse.isAuthenticated) {
+    return (
+      <Fragment>
+        APP:{JSON.stringify(loginResponse)}
+        <LoginPage onLogin={onLogin} />
+      </Fragment>
+    );
   }
 
-  function handleClick() {
-    setCount((prev) => prev + 1);
-    console.log(count);
-  }
-
-  return (
-    <div className="border-2 border-red-200">
-      <h1>{count}</h1>
-      <button
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-        onClick={handleClick}
-      >
-        Click
-      </button>
-      <div>
-        {students.map((student) => {
-          return (
-            <div key={student.id}>
-              <h1>{student.name}</h1>
-              <p>{student.email}</p>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  return <UserDetailPage loginResponse={loginResponse} />;
 }
